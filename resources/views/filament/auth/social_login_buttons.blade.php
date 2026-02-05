@@ -1,6 +1,6 @@
 <div class="space-y-3">
     <x-filament::button
-        :href="route('auth.socialite.redirect', 'voidauth')"
+        :href="route('auth.socialite.redirect', 'oidc')"
         :spa-mode="false"
         tag="a"
         color="gray"
