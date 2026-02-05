@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
 use Relaticle\SystemAdmin\Models\SystemAdministrator;
@@ -40,6 +41,7 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        URL::forceHttps($this->app->environment(['production']));
         $this->configurePolicies();
         $this->configureModels();
         $this->configureFilament();
