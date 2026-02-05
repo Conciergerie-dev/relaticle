@@ -68,7 +68,7 @@ services:
       - APP_ENV=${APP_ENV:-production}
       - APP_KEY=${SERVICE_PASSWORD_64_KEY}
       - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_URL=${SERVICE_URL_RELATICLE}
+      - APP_URL=${SERVICE_URL_APP}
       - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
       - DB_CONNECTION=pgsql
       - DB_HOST=postgres
@@ -107,7 +107,7 @@ services:
       - APP_ENV=${APP_ENV:-production}
       - APP_KEY=${SERVICE_PASSWORD_64_KEY}
       - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_URL=${SERVICE_URL_RELATICLE}
+      - APP_URL=${SERVICE_URL_APP}
       - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
       - DB_CONNECTION=pgsql
       - DB_HOST=postgres
