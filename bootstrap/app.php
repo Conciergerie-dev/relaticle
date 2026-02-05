@@ -38,6 +38,9 @@ return Application::configure(basePath: dirname(__DIR__))
             return route('login');
         });
     })
+    ->withMiddleware(function (Middleware $middleware): void {
+         $middleware->trustProxies(at: '*');
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         Integration::handles($exceptions);
     })

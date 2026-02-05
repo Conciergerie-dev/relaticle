@@ -14,7 +14,6 @@ services:
       - APP_DEBUG=${APP_DEBUG:-false}
       - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
       - APP_URL=${SERVICE_URL_APP}
-      - TRUSTED_PROXIES=*
       - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
       - LOG_LEVEL=${LOG_LEVEL:-warning}
       - DB_CONNECTION=pgsql
