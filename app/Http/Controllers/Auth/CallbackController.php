@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\User\CreatesNewSocialUsers;
+use App\Filament\Resources\CompanyResource;
 use App\Models\User;
 use App\Models\UserSocialAccount;
 use Filament\Notifications\Notification;
@@ -149,6 +150,12 @@ final readonly class CallbackController
     private function loginAndRedirect(User $user): RedirectResponse
     {
         Auth::login($user, remember: true);
+
+        if ($user->currentTeam) {
+            return redirect()->intended(
+                CompanyResource::getUrl('index', ['tenant' => $user->currentTeam->getKey()])
+            );
+        }
 
         return redirect()->intended(url()->getAppUrl());
     }

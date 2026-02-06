@@ -142,4 +142,12 @@ final class User extends Authenticatable implements FilamentUser, HasAvatar, Has
     {
         return $this->belongsToTeam($tenant);
     }
+
+    /**
+     * Determine if the user has a password set.
+     */
+    public function hasPassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
+    }
 }

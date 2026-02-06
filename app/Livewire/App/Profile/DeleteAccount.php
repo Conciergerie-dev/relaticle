@@ -40,18 +40,41 @@ final class DeleteAccount extends BaseLivewireComponent
                                 ->modalDescription(__('profile.modals.delete_account.notice'))
                                 ->modalSubmitActionLabel(__('profile.actions.delete_account'))
                                 ->modalCancelAction(false)
-                                ->schema([
-                                    Forms\Components\TextInput::make('password')
-                                        ->password()
-                                        ->revealable()
-                                        ->label(__('profile.form.password.label'))
-                                        ->required()
-                                        ->currentPassword(),
-                                ])
+                                ->schema($this->getDeleteAccountFormSchema())
                                 ->action($this->deleteAccount(...)),
                         ]),
                     ]),
             ]);
+    }
+
+    /**
+     * Get the form schema for delete account confirmation.
+     *
+     * @return array<Forms\Components\Component>
+     */
+    private function getDeleteAccountFormSchema(): array
+    {
+        $user = auth('web')->user();
+
+        if ($user->hasPassword()) {
+            return [
+                Forms\Components\TextInput::make('password')
+                    ->password()
+                    ->revealable()
+                    ->label(__('profile.form.password.label'))
+                    ->required()
+                    ->currentPassword(),
+            ];
+        }
+
+        // For users without a password (social login only), require email confirmation
+        return [
+            Forms\Components\TextInput::make('email')
+                ->label(__('profile.form.email_confirm.label'))
+                ->helperText(__('profile.form.email_confirm.helper'))
+                ->required()
+                ->rules(['in:'.$user->email]),
+        ];
     }
 
     /**

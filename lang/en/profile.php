@@ -25,6 +25,10 @@ return [
         'password' => [
             'label' => 'Password',
         ],
+        'email_confirm' => [
+            'label' => 'Confirm your email',
+            'helper' => 'Type your email address to confirm account deletion.',
+        ],
     ],
 
     'sections' => [
