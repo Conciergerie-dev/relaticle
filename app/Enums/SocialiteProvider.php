@@ -8,4 +8,5 @@ enum SocialiteProvider: string
 {
     case GOOGLE = 'google';
     case GITHUB = 'github';
+    case OIDC = 'oidc';
 }
