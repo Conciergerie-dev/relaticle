@@ -1,0 +1,184 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: ghcr.io/relaticle/relaticle:latest
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_APP_8080
+      - APP_NAME=${APP_NAME:-Relaticle}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${SERVICE_PASSWORD_64_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
+      - APP_URL=${SERVICE_URL_APP}
+      - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
+      - LOG_LEVEL=${LOG_LEVEL:-warning}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-relaticle}
+      - DB_USERNAME=${DB_USERNAME:-relaticle}
+      - DB_PASSWORD=${SERVICE_PASSWORD_DB}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${SERVICE_PASSWORD_REDIS}
+      - REDIS_PORT=6379
+      - CACHE_STORE=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - OIDC_BASE_URL=${OIDC_BASE_URL:?}
+      - OIDC_VERIFY_JWT=true
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:?}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:?}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI:?}
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${SMTP_HOST:-}
+      - MAIL_PORT=${SMTP_PORT:-587}
+      - MAIL_USERNAME=${SMTP_USER:-}
+      - MAIL_PASSWORD=${SMTP_PASS:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${SMTP_FROM:-hello@example.com}
+      - MAIL_FROM_NAME=${SMTP_FROM_NAME:-Contact Conciergerie}
+      # serversideup/php Laravel automations
+      - AUTORUN_ENABLED=true
+      - AUTORUN_LARAVEL_MIGRATION=true
+      - AUTORUN_LARAVEL_MIGRATION_ISOLATION=true
+    volumes:
+      - storage:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  horizon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: ghcr.io/relaticle/relaticle:latest
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "horizon"]
+    stop_signal: SIGTERM
+    environment:
+      - APP_NAME=${APP_NAME:-Relaticle}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${SERVICE_PASSWORD_64_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_URL=${SERVICE_URL_APP}
+      - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-relaticle}
+      - DB_USERNAME=${DB_USERNAME:-relaticle}
+      - DB_PASSWORD=${SERVICE_PASSWORD_DB}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${SERVICE_PASSWORD_REDIS}
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${SMTP_HOST:-}
+      - MAIL_PORT=${SMTP_PORT:-587}
+      - MAIL_USERNAME=${SMTP_USER:-}
+      - MAIL_PASSWORD=${SMTP_PASS:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${SMTP_FROM:-hello@example.com}
+      - MAIL_FROM_NAME=${SMTP_FROM_NAME:-Contact Conciergerie}
+      # Disable automations for worker container
+      - AUTORUN_ENABLED=false
+    volumes:
+      - storage:/var/www/html/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "healthcheck-horizon"]
+      start_period: 10s
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: ghcr.io/relaticle/relaticle:latest
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    stop_signal: SIGTERM
+    environment:
+      - APP_NAME=${APP_NAME:-Relaticle}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${SERVICE_PASSWORD_64_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_URL=${SERVICE_URL_APP}
+      - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-relaticle}
+      - DB_USERNAME=${DB_USERNAME:-relaticle}
+      - DB_PASSWORD=${SERVICE_PASSWORD_DB}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${SERVICE_PASSWORD_REDIS}
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${SMTP_HOST:-}
+      - MAIL_PORT=${SMTP_PORT:-587}
+      - MAIL_USERNAME=${SMTP_USER:-}
+      - MAIL_PASSWORD=${SMTP_PASS:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${SMTP_FROM:-hello@example.com}
+      - MAIL_FROM_NAME=${SMTP_FROM_NAME:-Contact Conciergerie}
+      # Disable automations for scheduler container
+      - AUTORUN_ENABLED=false
+    volumes:
+      - storage:/var/www/html/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_DATABASE:-relaticle}
+      - POSTGRES_USER=${DB_USERNAME:-relaticle}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_DB}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-relaticle} -d ${DB_DATABASE:-relaticle}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${SERVICE_PASSWORD_REDIS} --appendonly yes
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres:
+  redis:
+  storage:
