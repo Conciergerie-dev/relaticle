@@ -73,7 +73,11 @@ services:
       - APP_ENV=${APP_ENV:-production}
       - APP_KEY=${SERVICE_PASSWORD_64_KEY}
       - APP_DEBUG=${APP_DEBUG:-false}
+<<<<<<< HEAD
       - APP_URL=${SERVICE_URL_APP}
+=======
+      - APP_URL=${SERVICE_URL_RELATICLE}
+>>>>>>> a27923e2 (feat: updates for coolify)
       - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
       - DB_CONNECTION=pgsql
       - DB_HOST=postgres
