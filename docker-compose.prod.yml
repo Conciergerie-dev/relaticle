@@ -152,7 +152,7 @@ services:
       start_period: 10s
 
   postgres:
-    image: postgres:17-alpine
+    image: pgautoupgrade/pgautoupgrade:17-alpine
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${DB_DATABASE:-relaticle}
